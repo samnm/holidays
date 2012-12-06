@@ -1,14 +1,13 @@
 (repeat, fib){
   repeat(8, (i){
-    console.log(fib(i))
+    log(fib(i))
   })
 }(
   (repeats, func){
     (i, repeats, func, repeat) {
-      repeat(i, repeat);
+      repeat(i, repeat)
     }(0, repeats, func, (i, repeat){
       func(i)
-
       if (i < repeats - 1) {
         repeat(i + 1, repeat)
       }
@@ -20,7 +19,7 @@
     }((fib, n){
       if (n == 0) return 0
       if (n == 1) return 1
-      fib(fib, n - 1) + fib(fib, n - 2)
+      return fib(fib, n - 1) + fib(fib, n - 2)
     }, n)
   }
 )

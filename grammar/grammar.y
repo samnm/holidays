@@ -1,10 +1,18 @@
-%start HolidaysText
+%start Program
 
+/*
+  ECMA-262 5th Edition, 15.12.1 The  Grammar.
+*/
 
 
 %%
 
-HolidaysString
+Program
+    : Expr EOF
+        {return $$ = $1;}
+    ;
+
+StringLiteral
     : STRING
         { // replace escaped characters with actual character
           $$ = yytext.replace(/\\(\\|")/g, "$"+"1")
@@ -17,58 +25,157 @@ HolidaysString
         }
     ;
 
-HolidaysNumber
+NumberLiteral
     : NUMBER
         {$$ = Number(yytext);}
     ;
 
-HolidaysNullLiteral
+NullLiteral
     : NULL
         {$$ = null;}
     ;
 
-HolidaysBooleanLiteral
+BooleanLiteral
     : TRUE
         {$$ = true;}
     | FALSE
         {$$ = false;}
     ;
 
-HolidaysText
-    : HolidaysValue EOF
-        {return $$ = $1;}
+Literal
+    : NullLiteral
+    | BooleanLiteral
+    | NumberLiteral
+    | StringLiteral
+    | FunctionLiteral
     ;
 
-HolidaysValue
-    : HolidaysNullLiteral
-    | HolidaysBooleanLiteral
-    | HolidaysString
-    | HolidaysNumber
-    | HolidaysObject
+Expr
+    : EqualityExpr
     ;
 
-HolidaysObject
+PrimaryExpr
+    : CallExpr
+    | Literal
+    | IDENT
+    ;
+
+EqualityExpr
+    : RelationalExpr
+    | EqualityExpr '==' RelationalExpr
+      { $$ = Node('BinaryExpression', '=='); }
+    | EqualityExpr '!=' RelationalExpr
+      { $$ = Node('BinaryExpression', '!='); }
+    ;
+
+RelationalExpr
+    : AdditiveExpr
+    | RelationalExpr '<' AdditiveExpr
+      { $$ = Node('BinaryExpression', '<'); }
+    | RelationalExpr '>' AdditiveExpr
+      { $$ = Node('BinaryExpression', '>'); }
+    | RelationalExpr '<=' AdditiveExpr
+      { $$ = Node('BinaryExpression', '<='); }
+    | RelationalExpr '>=' AdditiveExpr
+      { $$ = Node('BinaryExpression', '>='); }
+    ;
+
+AdditiveExpr
+    : MultiplicativeExpr
+    | AdditiveExpr '+' MultiplicativeExpr
+      { $$ = Node('BinaryExpression', '+'); }
+    | AdditiveExpr '-' MultiplicativeExpr
+      { $$ = Node('BinaryExpression', '-'); }
+    ;
+
+MultiplicativeExpr
+    : PrimaryExpr
+    | MultiplicativeExpr '*' PrimaryExpr
+      { $$ = Node('BinaryExpression', '*'); }
+    | MultiplicativeExpr '/' PrimaryExpr
+      { $$ = Node('BinaryExpression', '/'); }
+    | MultiplicativeExpr '%' PrimaryExpr
+      { $$ = Node('BinaryExpression', '%'); }
+    ;
+
+Block
     : '{' '}'
-        {{$$ = {};}}
-    | '{' HolidaysMemberList '}'
+        {$$ = {};}
+    | '{' SourceElements '}'
         {$$ = $2;}
     ;
 
-HolidaysMember
-    : HolidaysString ':' HolidaysValue
-        {$$ = [$1, $3];}
+SourceElements
+    : SourceElement
+        { $$ = [$1]; }
+    | SourceElements SourceElement
+        { $$ = $1; $$.push($2); }
     ;
 
-HolidaysMemberList
-    : HolidaysMember
-        {{$$ = {}; $$[$1[0]] = $1[1];}}
-    | HolidaysMemberList ',' HolidaysMember
-        {$$ = $1; $1[$3[0]] = $3[1];}
+SourceElement
+    : Statement
     ;
 
-HolidaysElementList
-    : HolidaysValue
-        {$$ = [$1];}
-    | HolidaysElementList ',' HolidaysValue
-        {$$ = $1; $1.push($3);}
+Statement
+    : Block
+    | IfStatement
+    | ExprStatement
+    | ReturnStatement
     ;
+
+ExprStatement
+    : CallExpr
+    ;
+
+ReturnStatement
+    : RETURN Expr
+        { $$ = [Node('Return', $2)]; }
+    ;
+
+IfStatement
+    : IF '(' Expr ')' Statement
+    | IF '(' Expr ')' ELSE Statement
+    ;
+
+FunctionLiteral
+    : '(' ')' Block
+        {$$ = null;}
+    | '(' FormalParameterList ')' Block
+        {$$ = $2;}
+    ;
+
+FormalParameterList
+    : IDENT
+        { $$ = [Node('Identifier', $1)]; }
+    | FormalParameterList ',' IDENT
+        { $$ = $1; $$.push(Node('Identifier', $3)); }
+    ;
+
+CallExpr
+    : IDENT Arguments
+    | PrimaryExpr Arguments
+    | CallExpr Arguments
+    ;
+
+Arguments
+    : '(' ')'
+      { $$ = []; }
+    | '(' ArgumentList ')'
+      { $$ = $2; }
+    ;
+
+ArgumentList
+    : Expr
+        { $$ = [$1]; }
+    | ArgumentList ',' Expr
+        { $$ = $1; $$.push($3); }
+    ;
+
+%%
+
+function Node(type, value) {
+    return {
+        "type" : type,
+        "value" : value,
+    }
+}
