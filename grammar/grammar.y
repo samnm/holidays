@@ -1,10 +1,5 @@
 %start Program
 
-/*
-  ECMA-262 5th Edition, 15.12.1 The  Grammar.
-*/
-
-
 %%
 
 Program
@@ -113,14 +108,14 @@ SourceElements
     ;
 
 SourceElement
-    : Statement
+    : IfStatement
+    | CallExpr
+    | ReturnStatement
     ;
 
 Statement
     : Block
-    | IfStatement
-    | ExprStatement
-    | ReturnStatement
+    | SourceElement
     ;
 
 ExprStatement
