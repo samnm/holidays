@@ -7,7 +7,6 @@ if (process.argv.length != 3) {
 }
 
 file = fs.readFileSync(process.argv[2], 'ascii')
-console.log(file)
 
 var parser = new Parser()
 console.log(parser.parse(file))

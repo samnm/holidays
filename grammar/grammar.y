@@ -58,39 +58,39 @@ PrimaryExpr
 EqualityExpr
     : RelationalExpr
     | EqualityExpr '==' RelationalExpr
-      { $$ = Node('BinaryExpression', '=='); }
+      { $$ = BinaryExpressionNode('==', $1, $3); }
     | EqualityExpr '!=' RelationalExpr
-      { $$ = Node('BinaryExpression', '!='); }
+      { $$ = BinaryExpressionNode('!=', $1, $3); }
     ;
 
 RelationalExpr
     : AdditiveExpr
     | RelationalExpr '<' AdditiveExpr
-      { $$ = Node('BinaryExpression', '<'); }
+      { $$ = BinaryExpressionNode('<', $1, $3); }
     | RelationalExpr '>' AdditiveExpr
-      { $$ = Node('BinaryExpression', '>'); }
+      { $$ = BinaryExpressionNode('>', $1, $3); }
     | RelationalExpr '<=' AdditiveExpr
-      { $$ = Node('BinaryExpression', '<='); }
+      { $$ = BinaryExpressionNode('<=', $1, $3); }
     | RelationalExpr '>=' AdditiveExpr
-      { $$ = Node('BinaryExpression', '>='); }
+      { $$ = BinaryExpressionNode('>=', $1, $3); }
     ;
 
 AdditiveExpr
     : MultiplicativeExpr
     | AdditiveExpr '+' MultiplicativeExpr
-      { $$ = Node('BinaryExpression', '+'); }
+      { $$ = BinaryExpressionNode('+', $1, $3); }
     | AdditiveExpr '-' MultiplicativeExpr
-      { $$ = Node('BinaryExpression', '-'); }
+      { $$ = BinaryExpressionNode('-', $1, $3); }
     ;
 
 MultiplicativeExpr
     : PrimaryExpr
     | MultiplicativeExpr '*' PrimaryExpr
-      { $$ = Node('BinaryExpression', '*'); }
+      { $$ = BinaryExpressionNode('*', $1, $3); }
     | MultiplicativeExpr '/' PrimaryExpr
-      { $$ = Node('BinaryExpression', '/'); }
+      { $$ = BinaryExpressionNode('/', $1, $3); }
     | MultiplicativeExpr '%' PrimaryExpr
-      { $$ = Node('BinaryExpression', '%'); }
+      { $$ = BinaryExpressionNode('%', $1, $3); }
     ;
 
 Block
@@ -124,19 +124,21 @@ ExprStatement
 
 ReturnStatement
     : RETURN Expr
-        { $$ = [Node('Return', $2)]; }
+        { $$ = ReturnStatementNode($2); }
     ;
 
 IfStatement
     : IF '(' Expr ')' Statement
-    | IF '(' Expr ')' ELSE Statement
+        { $$ = IfStatementNode($3, $5, null); }
+    | IF '(' Expr ')' Statement ELSE Statement
+        { $$ = IfStatementNode($3, $5, $7); }
     ;
 
 FunctionLiteral
     : '(' ')' Block
-        {$$ = null;}
+        { $$ = FunctionNode([], $3); }
     | '(' FormalParameterList ')' Block
-        {$$ = $2;}
+        { $$ = FunctionNode($2, $4); }
     ;
 
 FormalParameterList
@@ -148,8 +150,11 @@ FormalParameterList
 
 CallExpr
     : IDENT Arguments
+        { $$ = CallExprNode($1, $2); }
     | PrimaryExpr Arguments
+        { $$ = CallExprNode($1, $2); }
     | CallExpr Arguments
+        { $$ = CallExprNode($1, $2); }
     ;
 
 Arguments
@@ -172,5 +177,46 @@ function Node(type, value) {
     return {
         "type" : type,
         "value" : value,
+    }
+}
+
+function BinaryExpressionNode(operator, left, right) {
+    return {
+        "type" : "BinaryExpression",
+        "operator" : operator,
+        "left" : left,
+        "right" : right,
+    }
+}
+
+function IfStatementNode(condition, consequent, alternative) {
+    return {
+        "type" : "IfStatement",
+        "condition" : condition,
+        "consequent" : consequent,
+        "alternative" : alternative,
+    }
+}
+
+function CallExprNode(subject, arguments) {
+    return {
+        "type" : "CallExpr",
+        "subject" : subject,
+        "arguments" : arguments,
+    }
+}
+
+function FunctionNode(params, body) {
+    return {
+        "type" : "Function",
+        "params" : params,
+        "body" : body,
+    }
+}
+
+function ReturnStatementNode(expr) {
+    return {
+        "type" : "Return",
+        "expr" : expr,
     }
 }
