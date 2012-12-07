@@ -1,7 +1,9 @@
 # Holidays
 ## No assignments
 
-Holidays is a programming language that lacks an assignment operator and consists only of anonymous functions, and a view bare datatypes.
+Holidays is a programming language that lacks an assignment operator and consists only of anonymous functions, and a few bare datatypes.
+
+Created for the PLTGames [Turing Tarpit competition](http://www.pltgames.com/competition/2012/12)
 
 Here is an example program that prints the first 8 fibonacci numbers:
 ```
