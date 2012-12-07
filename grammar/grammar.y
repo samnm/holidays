@@ -3,7 +3,7 @@
 %%
 
 Program
-    : CallExpr EOF
+    : FunctionLiteral EOF
         {return $$ = $1;}
     ;
 

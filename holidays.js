@@ -12,10 +12,36 @@ function panic(error) {
 }
 
 function expect(token, tokenType) {
-	console.log("Expecting " + tokenType)
 	if (token.type !== tokenType) {
 		panic("Expected " + tokenType);
 	}
+}
+
+function evaluateProgram(token) {
+	var callExpr = {
+		type : "CallExpr",
+		subject : token,
+		arguments : [libToken(console.log)]
+	};
+	return evaluateCallExpr(callExpr);
+}
+
+function libToken(func) {
+	return {
+		type : "Function",
+		body : [{
+			type : "LibCall",
+			func : func,
+		}],
+		params : [{
+	        "type" : "Identifier",
+	        "name" : "param",
+	    }],
+	};
+}
+
+function evaluateLibCall(token, environ) {
+	return token.func(environ['param'])
 }
 
 function evaluate(token, environ) {
@@ -31,7 +57,9 @@ function evaluate(token, environ) {
 		case "Return":
 			return evaluateReturnStatement(token, environ);
 		case "Identifier":
-			return evaluateIdentifier(token);
+			return evaluateIdentifier(token, environ);
+		case "LibCall":
+			return evaluateLibCall(token, environ);
 		default:
 			return token
 	}
@@ -48,7 +76,6 @@ function evaluateIfStatement(token, environ) {
 function evaluateCallExpr(token, environ) {
 	expect(token, "CallExpr")
 
-	console.log(token.subject)
 	var functionToken = evaluate(token.subject, environ);
 	var evalEnviron = {};
 	for (var key in environ) {
@@ -60,12 +87,11 @@ function evaluateCallExpr(token, environ) {
 	var argTokens = token.arguments;
 	var params = functionToken.params;
 	for (var i = 0; i < argTokens.length; i++) {
-		evalEnviron[params[i].name] = argTokens[i];
+		evalEnviron[params[i].name] = evaluate(argTokens[i]);
 	}
 	
-	console.log(functionToken)
 	for (var i = 0; i < functionToken.body.length; i++) {
-		console.log(functionToken.body[i].expr)
+		evaluate(functionToken.body[i], evalEnviron);
 	}
 }
 
@@ -81,11 +107,11 @@ function evaluateReturnStatement(token, environ) {
 function evaluateIdentifier(token, environ) {
 	expect(token, "Identifier")
 
-	if (!environ.hasOwnProperty(token.name)) {
-		environ[token.name] = {};
+	if (environ.hasOwnProperty(token.name)) {
+		return environ[token.name];
 	}
 
-	return environ[token.name];
+	return token;
 }
 
 var file = fs.readFileSync(process.argv[2], 'ascii')
@@ -93,5 +119,4 @@ var file = fs.readFileSync(process.argv[2], 'ascii')
 var parser = new Parser()
 var token = parser.parse(file)
 
-evaluate(token, {})
-console.log(token)
+evaluateProgram(token)
