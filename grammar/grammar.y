@@ -3,14 +3,14 @@
 %%
 
 Program
-    : Expr EOF
+    : CallExpr EOF
         {return $$ = $1;}
     ;
 
 StringLiteral
     : STRING
         { // replace escaped characters with actual character
-          $$ = yytext.replace(/\\(\\|")/g, "$"+"1")
+            $$ = yytext.replace(/\\(\\|")/g, "$"+"1")
                      .replace(/\\n/g,'\n')
                      .replace(/\\r/g,'\r')
                      .replace(/\\t/g,'\t')
@@ -45,6 +45,11 @@ Literal
     | FunctionLiteral
     ;
 
+Identifier
+    : IDENT
+        {$$ = IdentifierNode($1);}
+    ;
+
 Expr
     : EqualityExpr
     ;
@@ -52,7 +57,7 @@ Expr
 PrimaryExpr
     : CallExpr
     | Literal
-    | IDENT
+    | Identifier
     ;
 
 EqualityExpr
@@ -142,16 +147,16 @@ FunctionLiteral
     ;
 
 FormalParameterList
-    : IDENT
-        { $$ = [Node('Identifier', $1)]; }
-    | FormalParameterList ',' IDENT
-        { $$ = $1; $$.push(Node('Identifier', $3)); }
+    : Identifier
+        { $$ = [$1]; }
+    | FormalParameterList ',' Identifier
+        { $$ = $1; $$.push($3); }
     ;
 
 CallExpr
-    : IDENT Arguments
+    : Identifier Arguments
         { $$ = CallExprNode($1, $2); }
-    | PrimaryExpr Arguments
+    | FunctionLiteral Arguments
         { $$ = CallExprNode($1, $2); }
     | CallExpr Arguments
         { $$ = CallExprNode($1, $2); }
@@ -173,10 +178,10 @@ ArgumentList
 
 %%
 
-function Node(type, value) {
+function IdentifierNode(name) {
     return {
-        "type" : type,
-        "value" : value,
+        "type" : "Identifier",
+        "name" : name,
     }
 }
 
