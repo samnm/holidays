@@ -5,6 +5,8 @@ Holidays is a programming language that lacks an assignment operator and consist
 
 Created for the PLTGames [Turing Tarpit competition](http://www.pltgames.com/competition/2012/12)
 
+To try it out simply run `node holidays.js examples/example.hd`
+
 Here is an example program that prints the first 8 fibonacci numbers:
 ```
 (log){
