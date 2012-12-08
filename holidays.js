@@ -29,10 +29,10 @@ function evaluateProgram(token) {
 function libToken(func) {
 	return {
 		type : "Function",
-		body : [{
+		body : {
 			type : "LibCall",
 			func : func,
-		}],
+		},
 		params : [{
 	        "type" : "Identifier",
 	        "name" : "param",
@@ -60,8 +60,17 @@ function evaluate(token, environ) {
 			return evaluateIdentifier(token, environ);
 		case "LibCall":
 			return evaluateLibCall(token, environ);
+		case "StatementList":
+			return evaluateStatementList(token, environ);
 		default:
 			return token
+	}
+}
+
+function evaluateStatementList(token, environ) {
+	expect(token, "StatementList")
+	for (var i = 0; i < token.list.length; i++) {
+		evaluate(token.list[i], environ);
 	}
 }
 
@@ -71,11 +80,18 @@ function evaluateBinaryExpr(token, environ) {
 
 function evaluateIfStatement(token, environ) {
 	expect(token, "IfStatement")
+
+	var condition = evaluate(token.condition, environ)
+	if (condition) {
+		evaluate(token.consequent, environ)
+	} else if (token.alternative) {
+		evaluate(token.alternative, environ)
+	}
 }
 
 function evaluateCallExpr(token, environ) {
 	expect(token, "CallExpr")
-
+	
 	var functionToken = evaluate(token.subject, environ);
 	var evalEnviron = {};
 	for (var key in environ) {
@@ -90,9 +106,7 @@ function evaluateCallExpr(token, environ) {
 		evalEnviron[params[i].name] = evaluate(argTokens[i]);
 	}
 	
-	for (var i = 0; i < functionToken.body.length; i++) {
-		evaluate(functionToken.body[i], evalEnviron);
-	}
+	evaluate(functionToken.body, evalEnviron);
 }
 
 function evaluateFunction(token, environ) {

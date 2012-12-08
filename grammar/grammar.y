@@ -100,16 +100,16 @@ MultiplicativeExpr
 
 Block
     : '{' '}'
-        {$$ = {};}
+        {$$ = StatementListNode([]);}
     | '{' SourceElements '}'
         {$$ = $2;}
     ;
 
 SourceElements
     : SourceElement
-        { $$ = [$1]; }
+        { $$ = StatementListNode([$1]); }
     | SourceElements SourceElement
-        { $$ = $1; $$.push($2); }
+        { $$ = $1; $$.list.push($2); }
     ;
 
 SourceElement
@@ -223,5 +223,12 @@ function ReturnStatementNode(expr) {
     return {
         "type" : "Return",
         "expr" : expr,
+    }
+}
+
+function StatementListNode(list) {
+    return {
+        "type" : "StatementList",
+        "list" : list,
     }
 }
