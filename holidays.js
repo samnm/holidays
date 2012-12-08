@@ -13,7 +13,7 @@ function panic(error) {
 
 function expect(token, tokenType) {
 	if (token.type !== tokenType) {
-		panic("Expected " + tokenType);
+		panic("Expected " + tokenType + ", received " + token.type);
 	}
 }
 
@@ -68,9 +68,12 @@ function evaluate(token, environ) {
 }
 
 function evaluateStatementList(token, environ) {
-	expect(token, "StatementList")
+	expect(token, "StatementList");
 	for (var i = 0; i < token.list.length; i++) {
-		evaluate(token.list[i], environ);
+		var result = evaluate(token.list[i], environ);
+		if (result && result.type === "Return") {
+			return evaluate(result.expr, environ);
+		}
 	}
 }
 
@@ -111,11 +114,11 @@ function evaluateBinaryExpr(token, environ) {
 function evaluateIfStatement(token, environ) {
 	expect(token, "IfStatement")
 
-	var condition = evaluate(token.condition, environ)
+	var condition = evaluate(token.condition, environ);
 	if (condition) {
-		evaluate(token.consequent, environ)
+		return evaluate(token.consequent, environ)
 	} else if (token.alternative) {
-		evaluate(token.alternative, environ)
+		return evaluate(token.alternative, environ)
 	}
 }
 
@@ -136,7 +139,7 @@ function evaluateCallExpr(token, environ) {
 		evalEnviron[params[i].name] = evaluate(argTokens[i], environ);
 	}
 	
-	evaluate(functionToken.body, evalEnviron);
+	return evaluate(functionToken.body, evalEnviron);
 }
 
 function evaluateFunction(token, environ) {
@@ -146,6 +149,7 @@ function evaluateFunction(token, environ) {
 
 function evaluateReturnStatement(token, environ) {
 	expect(token, "Return")
+	return token
 }
 
 function evaluateIdentifier(token, environ) {
