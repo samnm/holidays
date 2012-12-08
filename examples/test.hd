@@ -1,12 +1,18 @@
 (log){
-	(repeats, func){
-		(i, repeats, func, repeat) {
-			repeat(i, repeat)
-		}(0, repeats, func, (i, repeat){
-			func(i)
-			if (i < repeats - 1) {
-				repeat(i + 1, repeat)
-			}
-		})
-	}(5, log)
+  (repeat){
+    repeat(3, (i){
+      log(i)
+    })
+  }(
+    (repeats, func){
+      (i, repeats, func, repeat) {
+        repeat(i, repeat)
+      }(0, repeats, func, (i, repeat){
+        func(i)
+        if (i < repeats - 1) {
+          repeat(i + 1, repeat)
+        }
+      })
+    }
+  )
 }

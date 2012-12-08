@@ -1,7 +1,7 @@
 (log){
   (repeat, fib){
-    repeat(1, (i){
-      log(fib(i))
+    repeat(5, (i){
+      log(fib(i + 1))
     })
   }(
     (repeats, func){
@@ -15,7 +15,7 @@
       })
     },
     (n){
-      (fib, n) {
+      return (fib, n) {
         return fib(fib, n)
       }((fib, n){
         if (n == 0) return 0
