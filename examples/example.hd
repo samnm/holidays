@@ -1,6 +1,6 @@
 (log){
   (repeat, fib){
-    repeat(5, (i){
+    repeat(8, (i){
       log(fib(i + 1))
     })
   }(
