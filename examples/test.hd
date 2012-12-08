@@ -1,0 +1,12 @@
+(log){
+	(repeats, func){
+		(i, repeats, func, repeat) {
+			repeat(i, repeat)
+		}(0, repeats, func, (i, repeat){
+			func(i)
+			if (i < repeats - 1) {
+				repeat(i + 1, repeat)
+			}
+		})
+	}(5, log)
+}

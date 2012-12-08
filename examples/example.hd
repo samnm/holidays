@@ -1,6 +1,6 @@
 (log){
   (repeat, fib){
-    repeat(8, (i){
+    repeat(1, (i){
       log(fib(i))
     })
   }(
@@ -16,7 +16,7 @@
     },
     (n){
       (fib, n) {
-        fib(fib, n)
+        return fib(fib, n)
       }((fib, n){
         if (n == 0) return 0
         if (n == 1) return 1
