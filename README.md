@@ -7,29 +7,31 @@ Created for the PLTGames [Turing Tarpit competition](http://www.pltgames.com/com
 
 Here is an example program that prints the first 8 fibonacci numbers:
 ```
-(repeat, fib){
-  repeat(8, (i){
-    log(fib(i))
-  })
-}(
-  (repeats, func){
-    (i, repeats, func, repeat) {
-      repeat(i, repeat)
-    }(0, repeats, func, (i, repeat){
-      func(i)
-      if (i < repeats - 1) {
-        repeat(i + 1, repeat)
-      }
+(log){
+  (repeat, fib){
+    repeat(5, (i){
+      log(fib(i + 1))
     })
-  },
-  (n){
-    (fib, n) {
-      fib(fib, n)
-    }((fib, n){
-      if (n == 0) return 0
-      if (n == 1) return 1
-      return fib(fib, n - 1) + fib(fib, n - 2)
-    }, n)
-  }
-)
+  }(
+    (repeats, func){
+      (i, repeats, func, repeat) {
+        repeat(i, repeat)
+      }(0, repeats, func, (i, repeat){
+        func(i)
+        if (i < repeats - 1) {
+          repeat(i + 1, repeat)
+        }
+      })
+    },
+    (n){
+      return (fib, n) {
+        return fib(fib, n)
+      }((fib, n){
+        if (n == 0) return 0
+        if (n == 1) return 1
+        return fib(fib, n - 1) + fib(fib, n - 2)
+      }, n)
+    }
+  )
+}
 ```
