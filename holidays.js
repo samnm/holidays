@@ -23,7 +23,7 @@ function evaluateProgram(token) {
 		subject : token,
 		arguments : [libToken(console.log)]
 	};
-	return evaluateCallExpr(callExpr);
+	return evaluateCallExpr(callExpr, {});
 }
 
 function libToken(func) {
@@ -76,6 +76,36 @@ function evaluateStatementList(token, environ) {
 
 function evaluateBinaryExpr(token, environ) {
 	expect(token, "BinaryExpression")
+
+	var left = evaluate(token.left, environ)
+	var right = evaluate(token.right, environ)
+
+	switch (token.operator) {
+		case '==':
+			return left === right;
+		case '!=':
+			return left !== right;
+		case '<':
+			return left < right;
+		case '>':
+			return left > right;
+		case '<=':
+			return left = right;
+		case '>=':
+			return left = right;
+		case '+':
+			return left + right;
+		case '-':
+			return left - right;
+		case '*':
+			return left * right;
+		case '/':
+			return left / right;
+		case '%':
+			return left % right;
+		default:
+			panic("Unrecognised operator " + token.operator);
+	}
 }
 
 function evaluateIfStatement(token, environ) {
@@ -103,7 +133,7 @@ function evaluateCallExpr(token, environ) {
 	var argTokens = token.arguments;
 	var params = functionToken.params;
 	for (var i = 0; i < argTokens.length; i++) {
-		evalEnviron[params[i].name] = evaluate(argTokens[i]);
+		evalEnviron[params[i].name] = evaluate(argTokens[i], environ);
 	}
 	
 	evaluate(functionToken.body, evalEnviron);
@@ -120,7 +150,7 @@ function evaluateReturnStatement(token, environ) {
 
 function evaluateIdentifier(token, environ) {
 	expect(token, "Identifier")
-
+	
 	if (environ.hasOwnProperty(token.name)) {
 		return environ[token.name];
 	}
